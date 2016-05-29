@@ -1372,11 +1372,14 @@ static void hackrf_libusb_transfer_callback(struct libusb_transfer* usb_transfer
 		}else {
 			request_exit();
 		}
+	} else if(usb_transfer->status == LIBUSB_TRANSFER_ERROR) {
+		// Ignore
+	} else if(usb_transfer->status == LIBUSB_TRANSFER_CANCELLED) {
+		// Ignore
 	} else {
 		/* Other cases LIBUSB_TRANSFER_NO_DEVICE
-		LIBUSB_TRANSFER_ERROR, LIBUSB_TRANSFER_TIMED_OUT
-		LIBUSB_TRANSFER_STALL,	LIBUSB_TRANSFER_OVERFLOW
-		LIBUSB_TRANSFER_CANCELLED ...
+		LIBUSB_TRANSFER_TIMED_OUT, LIBUSB_TRANSFER_STALL,
+		LIBUSB_TRANSFER_OVERFLOW ...
 		*/
 		request_exit(); /* Fatal error stop transfer */
 	}
@@ -1471,6 +1474,7 @@ int ADDCALL hackrf_start_rx(hackrf_device* device, hackrf_sample_block_cb_fn cal
 {
 	int result;
 	const uint8_t endpoint_address = LIBUSB_ENDPOINT_IN | 1;
+	do_exit = false;
 	result = hackrf_set_transceiver_mode(device, HACKRF_TRANSCEIVER_MODE_RECEIVE);
 	if( result == HACKRF_SUCCESS )
 	{
@@ -1495,6 +1499,7 @@ int ADDCALL hackrf_start_tx(hackrf_device* device, hackrf_sample_block_cb_fn cal
 {
 	int result;
 	const uint8_t endpoint_address = LIBUSB_ENDPOINT_OUT | 2;
+	do_exit = false;
 	result = hackrf_set_transceiver_mode(device, HACKRF_TRANSCEIVER_MODE_TRANSMIT);
 	if( result == HACKRF_SUCCESS )
 	{
